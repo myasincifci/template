@@ -1,0 +1,15 @@
+
+/*/lightning_logs
+/*/wandb
+/*/logs
+/*/outputs
+/*/model_zoo
+/*/data
+
+/data
+
+*.hdf5
+__pycache__/
+*.pyc
+
+conditional_neighbors/models

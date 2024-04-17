@@ -1,0 +1,42 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Current",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Pretrain",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/home/yasin/notebooks/dispatch_smol/pretraining/train.py",
+            "cwd": "/home/yasin/notebooks/dispatch_smol/pretraining",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "--config-name",
+                "pacs"
+            ]
+        },
+        {
+            "name": "Finetune",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/home/yasin/notebooks/dispatch_smol/finetuning/train.py",
+            "cwd": "/home/yasin/notebooks/dispatch_smol/finetuning",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "--config-name",
+                "debug"
+            ]
+        },
+    ]
+}

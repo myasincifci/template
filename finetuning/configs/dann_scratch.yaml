@@ -1,0 +1,7 @@
+defaults:
+  - base
+
+max_epochs: 20
+name: DANN
+disc:
+    alpha: 1.0
