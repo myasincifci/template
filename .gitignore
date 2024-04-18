@@ -1,17 +1,9 @@
-
-/*/lightning_logs
-/*/wandb
-/*/logs
-/*/outputs
-/*/model_zoo
-/*/data
-
-/data
-
 *.hdf5
-__pycache__/
 *.pyc
 
-/wandb
-/outputs
-/lightning_logs
+data/
+logs/
+wandb/
+outputs/
+lightning_logs/
+__pycache__/
