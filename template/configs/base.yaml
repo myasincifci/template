@@ -6,7 +6,7 @@ model:
     pretrained: False
 
 data:
-    path: /data
+    path: /tmp
     num_classes: 7
 
 param:
