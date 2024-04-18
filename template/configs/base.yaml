@@ -1,0 +1,21 @@
+name: Base
+logging: True
+unlabeled: True
+
+model:
+    pretrained: False
+
+data:
+    path: /data
+    num_classes: 7
+
+param:
+    lr: 1e-3
+    batch_size: 32
+
+trainer:
+    max_steps: 50_000
+    check_val_every_n_epoch: 5
+
+logger:
+    project: supervised-pacs-base

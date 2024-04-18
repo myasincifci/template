@@ -1,6 +1,0 @@
-defaults:
-  - base
-
-name: ImageNet-Linear-Eval
-weights: ImageNet
-freeze: [1,2,3,4]

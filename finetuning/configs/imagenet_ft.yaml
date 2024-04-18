@@ -1,5 +1,0 @@
-defaults:
-  - base
-
-name: ImageNet
-weights: ImageNet

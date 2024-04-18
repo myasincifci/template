@@ -1,6 +1,0 @@
-defaults:
-  - base
-
-name: ImageNet-F1-3
-weights: ImageNet
-freeze: [1,2,3]

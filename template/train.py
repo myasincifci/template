@@ -1,20 +1,14 @@
 import os
-
 import hydra
 import pytorch_lightning as L
 import torch
 import torch.nn as nn
-from data_modules.camelyon17_dm import CamelyonDM
 from data_modules.pacs_dm import PacsDM
-from data_modules.rxrx1_dm import RxRx1DM
-from model import BarlowTwins
+from model import ResnetClf
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import WandbLogger
 from torchvision import transforms as T
-from torchvision.models.resnet import ResNet50_Weights, resnet50, ResNet18_Weights, resnet18
-
 import wandb
-
 
 @hydra.main(version_base=None, config_path="configs")
 def main(cfg: DictConfig) -> None:
@@ -36,25 +30,10 @@ def main(cfg: DictConfig) -> None:
     L.seed_everything(42, workers=True)
 
     # Data
-    # data_module = CamelyonDM(cfg)
-    # data_module = RxRx1DM(cfg)
     data_module = PacsDM(cfg, leave_out=['sketch'])
 
     # Model
-    if cfg.model.pretrained:
-        backbone = resnet50(ResNet50_Weights.DEFAULT)
-    else:
-        backbone = resnet50()
-    backbone.fc = nn.Identity()
-
-    barlow_twins = BarlowTwins(
-        num_classes=data_module.num_classes,
-        backbone=backbone,
-        grouper=data_module.grouper,
-        domain_mapper=data_module.domain_mapper,
-        cfg=cfg
-    )
-    barlow_twins = barlow_twins
+    barlow_twins = ResnetClf(cfg=cfg)
 
     trainer = L.Trainer(
         max_steps=cfg.trainer.max_steps,

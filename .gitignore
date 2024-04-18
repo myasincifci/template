@@ -12,4 +12,6 @@
 __pycache__/
 *.pyc
 
-conditional_neighbors/models
+/wandb
+/outputs
+/lightning_logs

@@ -10,33 +10,14 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "justMyCode": false
         },
         {
-            "name": "Pretrain",
+            "name": "Train",
             "type": "debugpy",
             "request": "launch",
-            "program": "/home/yasin/notebooks/dispatch_smol/pretraining/train.py",
-            "cwd": "/home/yasin/notebooks/dispatch_smol/pretraining",
+            "program": "template/train.py",
             "console": "integratedTerminal",
-            "justMyCode": false,
-            "args": [
-                "--config-name",
-                "pacs"
-            ]
-        },
-        {
-            "name": "Finetune",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "/home/yasin/notebooks/dispatch_smol/finetuning/train.py",
-            "cwd": "/home/yasin/notebooks/dispatch_smol/finetuning",
-            "console": "integratedTerminal",
-            "justMyCode": false,
-            "args": [
-                "--config-name",
-                "debug"
-            ]
-        },
+            "args": ["--config-name", "debug"]
+        }
     ]
 }

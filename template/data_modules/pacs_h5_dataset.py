@@ -64,34 +64,20 @@ class PACSDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        domain = self.f['D'][index_]
-        cls = self.f['T'][index_]
+        domain = int(self.f['D'][index_])
+        cls = int(self.f['T'][index_])
 
         return image, cls, domain
     
-    # def __getitems__(self, idcs):
-    #     idcs_ = self.valid_indices[idcs].numpy()
+    def get_stats(self):
+        X = torch.from_numpy(self.f['X'][self.valid_indices])
+        mean = torch.mean(X, dim=(0,2,3))
+        std = torch.std(X, dim=(0,2,3))
 
-    #     images = torch.from_numpy(self.f['X'][idcs_])
+        print(mean)
+        print(std)
 
-    #     images0 = []
-    #     images1 = []
-
-    #     if self.transform:
-    #         for i in range(len(images)):
-    #             # TODO: only works with BYOL transform
-    #             i0, i1 = self.transform(images[i])
-    #             images0.append(i0[None]); images1.append(i1[None])
-    #         images0 = torch.vstack(images0).contiguous()
-    #         images1 = torch.vstack(images1).contiguous()
-
-    #     domains = self.f['D'][idcs_]
-    #     clss = self.f['T'][idcs_]
-
-    #     if self.transform:
-    #         return (images0, images1), clss, domains
-    #     else:
-    #         return images, clss, domains
+        return mean, std
     
 def get_pacs_loo(root, leave_out=None, train_tf=None, test_tf=None):
     domains = {'sketch', 'cartoon', 'art_painting', 'photo'}
@@ -103,12 +89,11 @@ def get_pacs_loo(root, leave_out=None, train_tf=None, test_tf=None):
 
 def main():
     train_set, test_set = get_pacs_loo(
-        '../data',
+        '/data',
         leave_out=['sketch'],
     )
 
-    train_set.__getitems__([0,1,3,5,8,9])
-    batch = test_set.__getitems__([0,1,3,5,8,9])
+    train_set.get_stats()
 
     a=1
 
