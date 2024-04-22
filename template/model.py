@@ -1,5 +1,6 @@
 from functools import partial
 from typing import Any
+from types import MethodType
 
 import pytorch_lightning as L
 import torch
@@ -13,16 +14,39 @@ from torch.nn import functional as F
 from torchvision.models.resnet import resnet18, ResNet18_Weights
 from torch.optim import lr_scheduler
 
+def res18(pretrained=None, num_classes=7):
+    if pretrained:
+        model = resnet18(ResNet18_Weights.DEFAULT)
+    else:
+        model = resnet18()
+    model.fc = nn.Linear(in_features=512, out_features=num_classes, bias=True)
+
+    def _forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
+
+        return x 
+    
+    model.forward = MethodType(_forward, model)
+
+    return model
+
 class ResnetClf(L.LightningModule):
     def __init__(self, cfg, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-        if cfg.model.pretrained:
-            self.model = resnet18(ResNet18_Weights.DEFAULT)
-        else:
-            self.model = resnet18()
-        self.model.fc = nn.Linear(in_features=512, out_features=cfg.data.num_classes, 
-            bias=True)
+        self.model = res18(cfg.model.pretrained, cfg.data.num_classes)
 
         self.criterion = nn.CrossEntropyLoss()
         self.accuracy = torchmetrics.classification.Accuracy(
@@ -51,6 +75,6 @@ class ResnetClf(L.LightningModule):
 
     def configure_optimizers(self) -> Any:
         optimizer = optim.SGD(params=self.parameters(), lr=self.cfg.param.lr, weight_decay=1e-4,momentum=0.9)
-        scheduler = lr_scheduler.StepLR(optimizer, )
+        # scheduler = lr_scheduler.StepLR(optimizer, )
 
-        return [optimizer], #[scheduler]
+        return [optimizer]#, [scheduler]
