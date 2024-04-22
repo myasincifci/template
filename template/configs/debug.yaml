@@ -4,3 +4,6 @@ defaults:
 name: Debug
 logging: False
 max_epochs: 1
+
+data:
+    path: /data
