@@ -3,7 +3,7 @@ logging: True
 unlabeled: True
 
 model:
-    pretrained: False
+    pretrained: True
 
 data:
     path: /tmp

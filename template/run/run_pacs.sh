@@ -14,4 +14,4 @@ ls /tmp
 
 apptainer run --nv \
     /home/myasincifci/containers/main/main.sif \
-    python ./train.py --config-name pacs
+    python ./train.py --config-name base
