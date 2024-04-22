@@ -11,6 +11,7 @@ from torch.autograd import Function
 from torch import nn
 from torch.nn import functional as F
 from torchvision.models.resnet import resnet18, ResNet18_Weights
+from torch.optim import lr_scheduler
 
 class ResnetClf(L.LightningModule):
     def __init__(self, cfg, *args: Any, **kwargs: Any) -> None:
@@ -50,5 +51,6 @@ class ResnetClf(L.LightningModule):
 
     def configure_optimizers(self) -> Any:
         optimizer = optim.SGD(params=self.parameters(), lr=self.cfg.param.lr, weight_decay=1e-4,momentum=0.9)
+        scheduler = lr_scheduler.StepLR(optimizer, )
 
-        return [optimizer]
+        return [optimizer], #[scheduler]
