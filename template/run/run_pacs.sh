@@ -5,8 +5,6 @@
 #SBATCH --ntasks-per-node=4
 #SBATCH --output=logs/job-%j.out
 
-#SBATCH --output=logs/job-%j.out
-
 # 1. copy the squashed dataset to the nodes /tmp 
 rsync -ah --progress /home/myasincifci/dispatch_smol/data/PACS.hdf5 /tmp
 

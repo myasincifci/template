@@ -10,7 +10,7 @@ data:
     num_classes: 7
 
 param:
-    lr: 1e-3
+    lr: 5e-4
     batch_size: 32
 
 trainer:
@@ -18,8 +18,8 @@ trainer:
     check_val_every_n_epoch: 1
 
 mixstyle:
-    active: False
-    p: 0.5 
+    active: True
+    p: 1.0 
     alpha: 0.1
     eps: 1e-6
 
