@@ -57,13 +57,21 @@ class MixStyle(nn.Module):
 
         return x_normed * sig_mix + mu_mix # denormalize input using the mixed statistics
 
-def res18(pretrained=None, num_classes=7):
-    if pretrained:
+def res18(cfg):
+    if cfg.model.pretrained:
         model = resnet18(ResNet18_Weights.DEFAULT)
     else:
         model = resnet18()
-    model.fc = nn.Linear(in_features=512, out_features=num_classes, bias=True)
-    model.ms = MixStyle()
+    model.fc = nn.Linear(in_features=512, out_features=cfg.data.num_classes, bias=True)
+    
+    if cfg.mixstyle.active:
+        model.ms = MixStyle(
+            p=cfg.mixstyle.p,
+            alpha=cfg.mixstyle.alpha,
+            eps=cfg.mixstyle.eps
+        )
+    else:
+        model.ms = None
 
     def _forward(self, x):
         x = self.conv1(x)
@@ -72,13 +80,13 @@ def res18(pretrained=None, num_classes=7):
         x = self.maxpool(x)
 
         x = self.layer1(x)
-        x = self.ms(x)
+        x = self.ms(x) if self.ms else x
 
         x = self.layer2(x)
-        x = self.ms(x)
+        x = self.ms(x) if self.ms else x
 
         x = self.layer3(x)
-        x = self.ms(x)
+        x = self.ms(x) if self.ms else x
 
         x = self.layer4(x)
 
@@ -96,7 +104,7 @@ class ResnetClf(L.LightningModule):
     def __init__(self, cfg, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-        self.model = res18(cfg.model.pretrained, cfg.data.num_classes)
+        self.model = res18(cfg)
 
         self.criterion = nn.CrossEntropyLoss()
         self.accuracy = torchmetrics.classification.Accuracy(
@@ -124,7 +132,7 @@ class ResnetClf(L.LightningModule):
         self.log("val/acc", self.accuracy, on_epoch=True)
 
     def configure_optimizers(self) -> Any:
-        optimizer = optim.SGD(params=self.parameters(), lr=self.cfg.param.lr, weight_decay=1e-4,momentum=0.9)
+        optimizer = optim.SGD(params=self.parameters(), lr=self.cfg.param.lr, weight_decay=1e-4, momentum=0.9)
         # scheduler = lr_scheduler.StepLR(optimizer, )
 
         return [optimizer]#, [scheduler]
