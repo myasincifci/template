@@ -1,6 +1,7 @@
 from functools import partial
 from typing import Any
 from types import MethodType
+import math
 
 import pytorch_lightning as L
 import torch
@@ -15,6 +16,19 @@ from torchvision.models.resnet import resnet18, ResNet18_Weights
 from torch.optim import lr_scheduler
 
 from torch.distributions.beta import Beta
+
+class ReverseLayerF(Function):
+    @staticmethod
+    def forward(ctx, x, alpha):
+        ctx.alpha = alpha
+
+        return x.view_as(x)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        output = grad_output.neg() * ctx.alpha
+
+        return output, None
 
 class MixStyle(nn.Module):
     def __init__(self, p=0.5, alpha=0.1, eps=1e-6, *args, **kwargs) -> None:
@@ -101,35 +115,59 @@ def res18(cfg):
     return model
 
 class ResnetClf(L.LightningModule):
-    def __init__(self, cfg, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, cfg, dm, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.model = res18(cfg)
+        self.model.fc = nn.Identity()
+        self.fc_cls = nn.Linear(512, cfg.data.num_classes)
 
         self.criterion = nn.CrossEntropyLoss()
         self.accuracy = torchmetrics.classification.Accuracy(
             task="multiclass", num_classes=cfg.data.num_classes)
         
+        if cfg.disc.active:
+            self.fc_dom = nn.Linear(512, len(dm.domain_mapper.unique_domains))
+            self.crit_crit = nn.CrossEntropyLoss()
+        
         self.cfg = cfg
+        self.dm = dm
+        self.total_steps = len(self.dm.train_dataloader()) * cfg.trainer.max_epochs
 
     def training_step(self, batch, batch_idx) -> STEP_OUTPUT:
         X, t, d = batch
+        d = self.dm.domain_mapper(d[:,0]).cuda()
 
-        y = self.model(X)
+        z = self.model(X) 
+        y = self.fc_cls(z)
+
         loss = self.criterion(y, t)
-        self.log("train/loss", loss.item())
+        self.log("train/loss", loss.item(), prog_bar=True)
 
-        return loss
+        crit_loss = 0.
+        if self.cfg.disc.active:
+            progress = self.global_step / self.total_steps
+            beta = 1.#progress#(2/(1+math.exp(-10*progress)))-1
+            alpha = self.cfg.disc.alpha*beta
+            self.log('alpha', alpha)
+
+            z = ReverseLayerF.apply(z, alpha)
+            p = self.fc_dom(z)
+
+            crit_loss = self.crit_crit(p, d.view(-1))
+            self.log("train/crit_loss", crit_loss.item(), prog_bar=True)
+
+        return loss + crit_loss
     
     def validation_step(self, batch, batch_idx, dataloader_idx=0) -> None:
         X, t, d = batch
 
-        y = self.model(X)
+        y = self.fc_cls(self.model(X))
         loss = self.criterion(y, t)
         self.accuracy(y, t)
 
-        self.log("val/loss", loss.item())
-        self.log("val/acc", self.accuracy, on_epoch=True)
+        self.log("val/loss", loss.item(), on_epoch=True, prog_bar=True)
+        self.log("val/acc", self.accuracy, on_epoch=True, prog_bar=True)
 
     def configure_optimizers(self) -> Any:
         optimizer = optim.SGD(params=self.parameters(), lr=self.cfg.param.lr, weight_decay=1e-4, momentum=0.9)

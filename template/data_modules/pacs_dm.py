@@ -1,6 +1,7 @@
 import os
-from typing import List
+from typing import List, Dict
 
+import torch
 from torch import tensor
 from pytorch_lightning.utilities.types import TRAIN_DATALOADERS
 from torch.utils.data import DataLoader
@@ -11,7 +12,13 @@ from lightly.transforms.byol_transform import (BYOLTransform,
                                                BYOLView2Transform)
 from lightly.transforms.utils import IMAGENET_NORMALIZE
 from data_modules.pacs_h5_dataset import get_pacs_loo
-from utils import DomainMapper
+
+class DomainMapper():
+    def __init__(self):
+        self.unique_domains = [0,1,2,3]
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        return x
 
 class PacsDM(pl.LightningDataModule):
     def __init__(self, cfg, leave_out: List=None) -> None:
@@ -20,11 +27,10 @@ class PacsDM(pl.LightningDataModule):
         self.batch_size = cfg.param.batch_size
 
         self.transform = T.Compose([
-            
+            T.Resize((224,224)),
+            T.ToTensor(),
             T.Normalize(
-                mean=[0.6400, 0.6076, 0.5604],
-                std=[0.3090, 0.3109, 0.3374],
-            ),
+                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
 
         self.train_set, self.test_set = get_pacs_loo(
@@ -33,6 +39,8 @@ class PacsDM(pl.LightningDataModule):
             train_tf=self.transform,
             test_tf=self.transform
         )
+
+        self.domain_mapper = DomainMapper()
 
         self.cfg = cfg
         self.num_classes = self.train_set.n_classes
@@ -55,6 +63,7 @@ class PacsDM(pl.LightningDataModule):
             drop_last=False,
             num_workers=8,
             pin_memory=True,
+            persistent_workers=True
         )
     
     def val_dataloader(self) -> TRAIN_DATALOADERS:    
@@ -64,7 +73,8 @@ class PacsDM(pl.LightningDataModule):
             shuffle=False,
             drop_last=False,
             num_workers=8,
-            pin_memory=True
+            pin_memory=True,
+            persistent_workers=True
         )
     
 def main():

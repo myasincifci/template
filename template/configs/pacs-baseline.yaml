@@ -1,0 +1,13 @@
+defaults:
+    - base
+
+logging: True
+
+data:
+    num_classes: 7
+
+mixstyle:
+    active: False
+
+logger:
+    project: supervised-experiments-pacs

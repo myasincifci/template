@@ -1,0 +1,17 @@
+defaults:
+    - base
+
+name: Debug
+logging: True
+
+data:
+    num_classes: 7
+
+mixstyle:
+    active: True
+    p: 1.0
+    alpha: 0.1
+    eps: 1e-6
+
+logger:
+    project: supervised-experiments-pacs

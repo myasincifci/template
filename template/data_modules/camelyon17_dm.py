@@ -13,20 +13,11 @@ from utils import DomainMapper
 class CamelyonDM(pl.LightningDataModule):
     def __init__(self, cfg, unlabeled=False) -> None:
         super().__init__()
-        self.data_dir = cfg.data_path
+        self.data_dir = cfg.data.path
         self.unlabeled = cfg.unlabeled
         self.batch_size = cfg.param.batch_size
 
-        self.train_transform = BYOLTransform(
-            view_1_transform=T.Compose([
-                BYOLView1Transform(input_size=96, gaussian_blur=0.0),
-            ]),
-            view_2_transform=T.Compose([
-                BYOLView2Transform(input_size=96, gaussian_blur=0.0),
-            ])
-        )
-
-        self.val_transform = T.Compose([
+        self.transform = T.Compose([
             T.ToTensor(),
             T.Normalize(
                 mean=IMAGENET_NORMALIZE["mean"],
@@ -58,65 +49,29 @@ class CamelyonDM(pl.LightningDataModule):
 
         self.num_classes = self.labeled_dataset.n_classes
 
+        self.train_set = self.labeled_dataset.get_subset(
+                "train", 
+                transform=self.transform
+        )
+
+        self.val_set_id = self.labeled_dataset.get_subset(
+            "id_val", 
+            transform=self.transform
+        )
+
+        self.val_set = self.labeled_dataset.get_subset(
+            "val", 
+            transform=self.transform
+        )
+
+        self.test_set = self.labeled_dataset.get_subset(
+            "test",
+            transform=self.transform
+        )
+
     def setup(self, stage: str) -> None:
         if stage == 'fit':
-            train_set_labeled = self.labeled_dataset.get_subset(
-                    "train", 
-                    transform=self.train_transform
-            )
-
-            if self.unlabeled:
-                self.train_set = self.unlabeled_dataset.get_subset(
-                    "train_unlabeled", 
-                    transform=self.train_transform
-                )
-            else:
-                self.train_set = train_set_labeled
-
-            self.val_set_id = self.labeled_dataset.get_subset(
-                "id_val", 
-                transform=self.val_transform
-            )
-
-            self.val_set = self.labeled_dataset.get_subset(
-                "val", 
-                transform=self.val_transform
-            )
-
-            self.test_set = self.labeled_dataset.get_subset(
-                "test",
-                transform=self.val_transform
-            )
-
-            ################
-
-            self.train_set_knn = self.labeled_dataset.get_subset(
-                "train", 
-                frac=4096/len(train_set_labeled), 
-                transform=self.val_transform
-            )
-
-            self.val_set_knn_id = self.labeled_dataset.get_subset(
-                "id_val",
-                frac=1024/len(self.val_set_id), 
-                transform=self.val_transform
-            )
-
-            self.val_set_knn = self.labeled_dataset.get_subset(
-                "val", 
-                frac=1024/len(self.val_set), 
-                transform=self.val_transform
-            )
-
-            self.test_set_knn = self.labeled_dataset.get_subset(
-                "test",
-                frac=1024/len(self.test_set),
-                transform=self.val_transform
-            )
-
-            # self.domain_mapper = self.domain_mapper.setup(
-            #     train_set_labeled.metadata_array[:, 0]
-            # )
+            pass
             
         elif stage == 'test':
             pass
@@ -129,51 +84,45 @@ class CamelyonDM(pl.LightningDataModule):
             self.train_set,
             batch_size=self.batch_size,
             shuffle=True,
-            drop_last=False,
+            drop_last=True,
             num_workers=8,
-            pin_memory=True
+            pin_memory=True,
+            persistent_workers=True
         )
     
     def val_dataloader(self) -> TRAIN_DATALOADERS:    
-        train_loader_knn = DataLoader(
-            self.train_set_knn,
+        val_loader_id = DataLoader(
+            self.val_set_id,
             batch_size=self.batch_size,
             shuffle=False,
             drop_last=False,
             num_workers=8,
-            pin_memory=True
+            pin_memory=True,
+            persistent_workers=True
         )
 
-        val_loader_knn_id = DataLoader(
-            self.val_set_knn_id,
+        val_loader = DataLoader(
+            self.val_set,
             batch_size=self.batch_size,
             shuffle=False,
             drop_last=False,
             num_workers=8,
-            pin_memory=True
+            pin_memory=True,
+            persistent_workers=True
         )
 
-        val_loader_knn = DataLoader(
-            self.val_set_knn,
+        test_loader = DataLoader(
+            self.test_set,
             batch_size=self.batch_size,
             shuffle=False,
             drop_last=False,
             num_workers=8,
-            pin_memory=True
-        )
-
-        test_loader_knn = DataLoader(
-            self.test_set_knn,
-            batch_size=self.batch_size,
-            shuffle=False,
-            drop_last=False,
-            num_workers=8,
-            pin_memory=True
+            pin_memory=True,
+            persistent_workers=True
         )
 
         return [
-            train_loader_knn,
-            val_loader_knn_id,
-            val_loader_knn,
-            test_loader_knn
+            val_loader_id,
+            val_loader,
+            test_loader
         ]

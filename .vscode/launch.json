@@ -17,7 +17,7 @@
             "request": "launch",
             "program": "template/train.py",
             "console": "integratedTerminal",
-            "args": ["--config-name", "debug"]
+            "args": ["--config-name", "camelyon-baseline"]
         }
     ]
 }

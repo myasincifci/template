@@ -64,7 +64,7 @@ class PACSDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        domain = int(self.f['D'][index_])
+        domain = torch.tensor([int(self.f['D'][index_])])[None]
         cls = int(self.f['T'][index_])
 
         return image, cls, domain

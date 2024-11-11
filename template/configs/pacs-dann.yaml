@@ -1,0 +1,18 @@
+defaults:
+    - base
+
+name: Debug
+logging: True
+
+data:
+    num_classes: 7
+
+disc:
+    active: True
+    alpha: 0.1
+
+trainer:
+    max_epochs: 60
+
+logger:
+    project: supervised-experiments-pacs

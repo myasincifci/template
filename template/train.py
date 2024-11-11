@@ -1,9 +1,11 @@
 import os
+import random
 import hydra
 import pytorch_lightning as L
 import torch
 import torch.nn as nn
 from data_modules.pacs_dm import PacsDM
+from data_modules.camelyon17_dm import CamelyonDM
 from model import ResnetClf
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import WandbLogger
@@ -27,24 +29,31 @@ def main(cfg: DictConfig) -> None:
         )
         logger = WandbLogger()
 
-    L.seed_everything(42, workers=True)
+    seed = random.randint(0,9999999)
+    L.seed_everything(seed, workers=True)
 
     # Data
-    data_module = PacsDM(cfg, leave_out=['sketch'])
+    match cfg.data.name:
+        case 'pacs':
+            data_module = PacsDM(cfg, leave_out=['sketch'])
+        case 'domainnet':
+            raise NotImplementedError
+        case 'camelyon':
+            data_module = CamelyonDM(cfg, unlabeled=False)
 
     # Model
-    barlow_twins = ResnetClf(cfg=cfg)
+    model = ResnetClf(cfg=cfg, dm=data_module)
 
     trainer = L.Trainer(
-        max_steps=cfg.trainer.max_steps,
+        max_epochs=cfg.trainer.max_epochs,
         accelerator="auto",
         check_val_every_n_epoch=cfg.trainer.check_val_every_n_epoch,
         logger=logger,
-        log_every_n_steps=5,
+        log_every_n_steps=cfg.logger.log_every_n_steps,
     )
 
     trainer.fit(
-        model=barlow_twins,
+        model=model,
         datamodule=data_module
     )
 

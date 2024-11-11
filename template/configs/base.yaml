@@ -1,27 +1,32 @@
 name: Base
 logging: True
-unlabeled: True
+unlabeled: False
 
 model:
     pretrained: True
 
 data:
-    path: /tmp
-    num_classes: 7
+    name: pacs
+    path: /data
 
 param:
-    lr: 2e-3
-    batch_size: 32
+    lr: 1e-3
+    batch_size: 64
 
 trainer:
-    max_steps: 100_000
+    max_epochs: 20
     check_val_every_n_epoch: 1
 
 mixstyle:
-    active: True
+    active: False
     p: 1.0 
     alpha: 0.1
     eps: 1e-6
 
+disc:
+    active: False
+    alpha: 0.1
+
 logger:
-    project: supervised-pacs-base
+    log_every_n_steps: 5
+    project: supervised-experiments-base
