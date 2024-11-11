@@ -10,7 +10,7 @@ data:
     path: /data
 
 param:
-    lr: 1e-3
+    lr: 3e-4
     batch_size: 64
 
 trainer:
