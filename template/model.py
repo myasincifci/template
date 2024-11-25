@@ -17,6 +17,8 @@ from torch.optim import lr_scheduler
 
 from torch.distributions.beta import Beta
 
+from lightly.loss import BarlowTwinsLoss
+
 class ReverseLayerF(Function):
     @staticmethod
     def forward(ctx, x, alpha):
@@ -134,6 +136,8 @@ class ResnetClf(L.LightningModule):
         self.dm = dm
         self.total_steps = len(self.dm.train_dataloader()) * cfg.trainer.max_epochs
 
+        self.btl = BarlowTwinsLoss()
+
     def training_step(self, batch, batch_idx) -> STEP_OUTPUT:
         X, t, d = batch
         d = self.dm.domain_mapper(d[:,0]).cuda()
@@ -145,6 +149,7 @@ class ResnetClf(L.LightningModule):
         self.log("train/loss", loss.item(), prog_bar=True)
 
         crit_loss = 0.
+        bt_loss = 0.
         if self.cfg.disc.active:
             progress = self.global_step / self.total_steps
             beta = 1.#progress#(2/(1+math.exp(-10*progress)))-1
@@ -157,7 +162,11 @@ class ResnetClf(L.LightningModule):
             crit_loss = self.crit_crit(p, d.view(-1))
             self.log("train/crit_loss", crit_loss.item(), prog_bar=True)
 
-        return loss + crit_loss
+        if self.cfg.decorrelate_embeddings:
+            bt_loss = self.btl(z, z) / 10_000
+            self.log("train/bt_loss", bt_loss.item())
+
+        return loss + crit_loss + bt_loss
     
     def validation_step(self, batch, batch_idx, dataloader_idx=0) -> None:
         X, t, d = batch
