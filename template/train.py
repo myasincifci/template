@@ -10,6 +10,7 @@ from model import ResnetClf
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import WandbLogger
 from torchvision import transforms as T
+from pytorch_lightning.callbacks import LearningRateMonitor
 import wandb
 
 @hydra.main(version_base=None, config_path="configs")
@@ -50,6 +51,7 @@ def main(cfg: DictConfig) -> None:
         check_val_every_n_epoch=cfg.trainer.check_val_every_n_epoch,
         logger=logger,
         log_every_n_steps=cfg.logger.log_every_n_steps,
+        callbacks=[LearningRateMonitor(logging_interval='step')]
     )
 
     trainer.fit(

@@ -9,6 +9,7 @@ model:
 data:
     name: camelyon
     num_classes: 2
+    color_aug: True
 
 trainer:
     check_val_every_n_epoch: 1

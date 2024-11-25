@@ -6,6 +6,9 @@ logging: True
 data:
     num_classes: 7
 
+trainer:
+    max_epochs: 60
+
 mixstyle:
     active: False
 

@@ -14,7 +14,7 @@ trainer:
     check_val_every_n_epoch: 1
 
 mixstyle:
-    active: False
+    active: True
 
 disc:
     active: False

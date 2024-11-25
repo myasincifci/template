@@ -17,7 +17,18 @@ class CamelyonDM(pl.LightningDataModule):
         self.unlabeled = cfg.unlabeled
         self.batch_size = cfg.param.batch_size
 
-        self.transform = T.Compose([
+        if cfg.data.color_aug:
+            self.train_transform = BYOLView1Transform(input_size=96, gaussian_blur=0.0)
+        else:
+            self.train_transform = T.Compose([
+                T.ToTensor(),
+                T.Normalize(
+                    mean=IMAGENET_NORMALIZE["mean"],
+                    std=IMAGENET_NORMALIZE["std"],
+                ),
+            ])
+
+        self.val_transform = T.Compose([
             T.ToTensor(),
             T.Normalize(
                 mean=IMAGENET_NORMALIZE["mean"],
@@ -51,22 +62,22 @@ class CamelyonDM(pl.LightningDataModule):
 
         self.train_set = self.labeled_dataset.get_subset(
                 "train", 
-                transform=self.transform
+                transform=self.train_transform
         )
 
         self.val_set_id = self.labeled_dataset.get_subset(
             "id_val", 
-            transform=self.transform
+            transform=self.val_transform
         )
 
         self.val_set = self.labeled_dataset.get_subset(
             "val", 
-            transform=self.transform
+            transform=self.val_transform
         )
 
         self.test_set = self.labeled_dataset.get_subset(
             "test",
-            transform=self.transform
+            transform=self.val_transform
         )
 
     def setup(self, stage: str) -> None:

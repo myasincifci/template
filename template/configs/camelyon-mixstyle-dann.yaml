@@ -14,10 +14,10 @@ trainer:
     check_val_every_n_epoch: 1
 
 mixstyle:
-    active: False
+    active: True
 
 disc:
-    active: False
+    active: True
 
 logger:
     log_every_n_steps: 100

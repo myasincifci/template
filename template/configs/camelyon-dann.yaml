@@ -17,7 +17,7 @@ mixstyle:
     active: False
 
 disc:
-    active: False
+    active: True
 
 logger:
     log_every_n_steps: 100

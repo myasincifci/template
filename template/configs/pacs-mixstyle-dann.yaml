@@ -10,6 +10,10 @@ data:
 trainer:
     max_epochs: 60
 
+disc:
+    active: True
+    alpha: 0.1
+
 mixstyle:
     active: True
     p: 1.0

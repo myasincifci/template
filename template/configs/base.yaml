@@ -8,14 +8,16 @@ model:
 data:
     name: pacs
     path: /data
+    color_aug: False
 
 param:
-    lr: 3e-4
+    lr: 1e-3
     batch_size: 64
 
 trainer:
-    max_epochs: 20
+    max_epochs: 30
     check_val_every_n_epoch: 1
+    step_lr_stepsize: 20
 
 mixstyle:
     active: False

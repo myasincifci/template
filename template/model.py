@@ -171,6 +171,6 @@ class ResnetClf(L.LightningModule):
 
     def configure_optimizers(self) -> Any:
         optimizer = optim.SGD(params=self.parameters(), lr=self.cfg.param.lr, weight_decay=1e-4, momentum=0.9)
-        # scheduler = lr_scheduler.StepLR(optimizer, )
+        scheduler = lr_scheduler.StepLR(optimizer, self.cfg.trainer.step_lr_stepsize, gamma=0.1)
 
-        return [optimizer]#, [scheduler]
+        return [optimizer], [scheduler]
