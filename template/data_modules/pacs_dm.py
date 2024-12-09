@@ -26,7 +26,21 @@ class PacsDM(pl.LightningDataModule):
         self.data_dir = cfg.data.path
         self.batch_size = cfg.param.batch_size
 
-        self.transform = T.Compose([
+        if cfg.data.color_aug:
+            self.train_transform = BYOLView1Transform(
+                input_size=224, 
+                gaussian_blur=0.0
+            )
+        else:
+            self.train_transform = BYOLView1Transform(
+                input_size=224, 
+                cj_prob=0.0,
+                random_gray_scale=0.0,
+                gaussian_blur=0.0,
+                solarization_prob=0.0,
+            )
+
+        self.val_transform = T.Compose([
             T.Resize((224,224)),
             T.ToTensor(),
             T.Normalize(
@@ -36,8 +50,8 @@ class PacsDM(pl.LightningDataModule):
         self.train_set, self.test_set = get_pacs_loo(
             root=cfg.data.path,
             leave_out=leave_out,
-            train_tf=self.transform,
-            test_tf=self.transform
+            train_tf=self.train_transform,
+            test_tf=self.val_transform
         )
 
         self.domain_mapper = DomainMapper()

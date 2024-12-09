@@ -163,7 +163,7 @@ class ResnetClf(L.LightningModule):
             self.log("train/crit_loss", crit_loss.item(), prog_bar=True)
 
         if self.cfg.decorrelate_embeddings:
-            bt_loss = self.btl(z, z) / 10_000
+            bt_loss = self.btl(z, z) / 1_000
             self.log("train/bt_loss", bt_loss.item())
 
         return loss + crit_loss + bt_loss

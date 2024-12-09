@@ -1,0 +1,27 @@
+defaults:
+    - base
+
+logging: True
+
+model:
+    pretrained: True # SSL also not pretrained
+
+data:
+    name: pacs
+    num_classes: 7
+    
+    color_aug: False
+
+trainer:
+    check_val_every_n_epoch: 1
+    max_epochs: 60
+
+mixstyle:
+    active: False
+
+disc:
+    active: False
+
+logger:
+    log_every_n_steps: 100
+    project: supervised-experiments-4-pacs

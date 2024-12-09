@@ -1,0 +1,26 @@
+defaults:
+    - base
+
+logging: True
+
+model:
+    pretrained: False # SSL also not pretrained
+
+data:
+    name: camelyon
+    num_classes: 2
+    
+    color_aug: False
+
+trainer:
+    check_val_every_n_epoch: 1
+
+mixstyle:
+    active: True
+
+disc:
+    active: True
+
+logger:
+    log_every_n_steps: 100
+    project: supervised-experiments-4-camelyon

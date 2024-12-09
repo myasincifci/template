@@ -2,6 +2,8 @@ name: Base
 logging: True
 unlabeled: False
 
+decorrelate_embeddings: False
+
 model:
     pretrained: True
 

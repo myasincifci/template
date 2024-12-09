@@ -59,7 +59,9 @@ class PACSDataset(Dataset):
     def __getitem__(self, index) -> Any:
         index_ = self.valid_indices[index].item()
         
-        image = torch.from_numpy(self.f['X'][index_])
+        image = self.f['X'][index_]
+
+        print(image.shape)
 
         if self.transform:
             image = self.transform(image)

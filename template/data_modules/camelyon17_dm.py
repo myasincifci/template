@@ -18,15 +18,18 @@ class CamelyonDM(pl.LightningDataModule):
         self.batch_size = cfg.param.batch_size
 
         if cfg.data.color_aug:
-            self.train_transform = BYOLView1Transform(input_size=96, gaussian_blur=0.0)
+            self.train_transform = BYOLView1Transform(
+                input_size=96, 
+                gaussian_blur=0.0
+            )
         else:
-            self.train_transform = T.Compose([
-                T.ToTensor(),
-                T.Normalize(
-                    mean=IMAGENET_NORMALIZE["mean"],
-                    std=IMAGENET_NORMALIZE["std"],
-                ),
-            ])
+            self.train_transform = BYOLView1Transform(
+                input_size=96, 
+                cj_prob=0.0,
+                random_gray_scale=0.0,
+                gaussian_blur=0.0,
+                solarization_prob=0.0,
+            )
 
         self.val_transform = T.Compose([
             T.ToTensor(),
