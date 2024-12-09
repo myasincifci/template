@@ -17,7 +17,8 @@
             "request": "launch",
             "program": "template/train.py",
             "console": "integratedTerminal",
-            "args": ["--config-name", "camelyon-baseline"]
+            "args": ["--config-name", "pacs-no-no-none"],
+            "justMyCode": false
         }
     ]
 }

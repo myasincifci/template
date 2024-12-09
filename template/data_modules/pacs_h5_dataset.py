@@ -59,9 +59,8 @@ class PACSDataset(Dataset):
     def __getitem__(self, index) -> Any:
         index_ = self.valid_indices[index].item()
         
-        image = self.f['X'][index_]
-
-        print(image.shape)
+        image = np.uint8(self.f['X'][index_]*255.).transpose(1,2,0)
+        image = Image.fromarray(image)
 
         if self.transform:
             image = self.transform(image)
