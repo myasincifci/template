@@ -127,6 +127,7 @@ class ResnetClf(L.LightningModule):
         self.criterion = nn.CrossEntropyLoss()
         self.accuracy = torchmetrics.classification.Accuracy(
             task="multiclass", num_classes=cfg.data.num_classes)
+        self.cohen_kappa = torchmetrics.CohenKappa("multiclass", num_classes=cfg.data.num_classes, weights="quadratic")
         
         if cfg.disc.active:
             self.fc_dom = nn.Linear(512, len(dm.domain_mapper.unique_domains))
@@ -174,9 +175,11 @@ class ResnetClf(L.LightningModule):
         y = self.fc_cls(self.model(X))
         loss = self.criterion(y, t)
         self.accuracy(y, t)
+        self.cohen_kappa(y, t)
 
         self.log("val/loss", loss.item(), on_epoch=True, prog_bar=True)
         self.log("val/acc", self.accuracy, on_epoch=True, prog_bar=True)
+        self.log("val/cohen_kappa", self.cohen_kappa, on_epoch=True, prog_bar=True)
 
     def configure_optimizers(self) -> Any:
         optimizer = optim.SGD(params=self.parameters(), lr=self.cfg.param.lr, weight_decay=1e-4, momentum=0.9)

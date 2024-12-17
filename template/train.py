@@ -5,6 +5,7 @@ import pytorch_lightning as L
 import torch
 import torch.nn as nn
 from data_modules.pacs_dm import PacsDM
+from data_modules.dr_dm import DRDM
 from data_modules.camelyon17_dm import CamelyonDM
 from model import ResnetClf
 from omegaconf import DictConfig, OmegaConf
@@ -41,6 +42,8 @@ def main(cfg: DictConfig) -> None:
             raise NotImplementedError
         case 'camelyon':
             data_module = CamelyonDM(cfg, unlabeled=False)
+        case 'dr':
+            data_module = DRDM(cfg, leave_out='aptos')
 
     # Model
     model = ResnetClf(cfg=cfg, dm=data_module)
