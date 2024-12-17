@@ -13,4 +13,4 @@ rsync -ah --progress /home/myasincifci/dispatch_smol/data/PACS.hdf5 /tmp
 
 apptainer run --nv -B /tmp:/data /home/myasincifci/containers/main/main.sif \
     python template/train.py \
-        --config-name pacs-no-no-none
+        --config-name pacs-no-yes-mix
