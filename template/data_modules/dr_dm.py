@@ -2,7 +2,7 @@ from typing import List
 
 import torch
 from pytorch_lightning.utilities.types import TRAIN_DATALOADERS
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 from torchvision.transforms import v2 as T
 import pytorch_lightning as pl
 from lightly.transforms.byol_transform import BYOLView1Transform
@@ -48,17 +48,24 @@ class DRDM(pl.LightningDataModule):
                 )
         ])
 
-        self.train_set, self.test_set = get_loo_dr(
+        train_set, self.test_set = get_loo_dr(
             root=self.data_dir,
             leave_out=leave_out,
             train_tf=self.train_transform,
             test_tf=self.val_transform
         )
 
+        train_size = int(0.8 * len(train_set))
+        id_val_size = len(train_set) - train_size
+
+        with torch.random.fork_rng():
+            torch.manual_seed(42)
+            self.train_set, self.id_val_set = random_split(train_set, [train_size, id_val_size])
+
         self.domain_mapper = DomainMapper()
 
         self.cfg = cfg
-        self.num_classes = self.train_set.n_classes
+        self.num_classes = train_set.n_classes
 
     def setup(self, stage: str) -> None:
         if stage == 'fit':
@@ -82,7 +89,17 @@ class DRDM(pl.LightningDataModule):
         )
     
     def val_dataloader(self) -> TRAIN_DATALOADERS:    
-        return DataLoader(
+        id_val = DataLoader(
+            self.id_val_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            drop_last=False,
+            num_workers=8,
+            pin_memory=True,
+            persistent_workers=True
+        )
+        
+        test = DataLoader(
             self.test_set,
             batch_size=self.batch_size,
             shuffle=False,
@@ -91,6 +108,13 @@ class DRDM(pl.LightningDataModule):
             pin_memory=True,
             persistent_workers=True
         )
+
+
+
+        return [
+            id_val,
+            test    
+        ]
     
 def main():
     pass
